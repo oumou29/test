@@ -15,7 +15,7 @@ const jwt = require("jsonwebtoken");
 const moment = require("moment");
 
 mongoose
-  .connect("mongodb+srv://sujan:sujan@cluster0.zjqdesc.mongodb.net/")
+  .connect("mongodb+srv://oumoudiallo7540:FhhSDktbgYHqDYYH@todolist.g1gdoow.mongodb.net/")
   .then(() => {
     console.log("Connected to MongoDB");
   })
@@ -165,6 +165,7 @@ app.get("/todos/completed/:date", async (req, res) => {
 
     res.status(200).json({ completedTodos });
   } catch (error) {
+    
     res.status(500).json({ error: "Something went wrong" });
   }
 });

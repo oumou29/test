@@ -12,7 +12,7 @@ const index = () => {
   const fetchCompletedTodos = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/todos/completed/${selectedDate}`
+        `http://192.168.1.54:3000/todos/completed/${selectedDate}`
       );
 
       const completedTodos = response.data.completedTodos || [];

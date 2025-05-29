@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
   ViewBase,
+
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { AntDesign, Feather } from "@expo/vector-icons";
@@ -31,6 +32,7 @@ const index = () => {
   const [pendingTodos, setPendingTodos] = useState([]);
   const [completedTodos, setCompletedTodos] = useState([]);
   const [marked, setMarked] = useState(false);
+
   const suggestions = [
     {
       id: "0",
@@ -57,15 +59,19 @@ const index = () => {
       todo: "finish assignments",
     },
   ];
+
+
+
   const addTodo = async () => {
     try {
       const todoData = {
         title: todo,
         category: category,
       };
+      
 
       axios
-        .post("http://localhost:3000/todos/6583eea7c5bc35503ef0f5ae", todoData)
+        .post("http://192.168.1.54:3000/todos/683657a279faae78728248e7", todoData)
         .then((response) => {
           console.log(response);
         })
@@ -74,19 +80,26 @@ const index = () => {
         });
 
       await getUserTodos();
-      setModalVisible(false);
-      setTodo("");
+        setModalVisible(false);
+        setTodo("");
     } catch (error) {
       console.log("error", error);
     }
   };
+
+
+
+
   useEffect(() => {
     getUserTodos();
   }, [marked, isModalVisible]);
+  
+
+
   const getUserTodos = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/users/6583eea7c5bc35503ef0f5ae/todos`
+        `http://192.168.1.54:3000/users/683657a279faae78728248e7/todos`
       );
 
       console.log(response.data.todos);
@@ -107,6 +120,7 @@ const index = () => {
       console.log("error", error);
     }
   };
+
   const markTodoAsCompleted = async (todoId) => {
     try {
       setMarked(true);
@@ -118,8 +132,10 @@ const index = () => {
       console.log("error", error);
     }
   };
+
   console.log("completed", completedTodos);
   console.log("pending", pendingTodos);
+
   return (
     <>
       <View
@@ -326,8 +342,8 @@ const index = () => {
       </ScrollView>
 
       <BottomModal
-        onBackdropPress={() => setModalVisible(!isModalVisible)}
-        onHardwareBackPress={() => setModalVisible(!isModalVisible)}
+        onBackdropPress={() => {setModalVisible(false);return true;}}
+        onHardwareBackPress={() => {setModalVisible(false);return true;}}
         swipeDirection={["up", "down"]}
         swipeThreshold={200}
         modalTitle={<ModalTitle title="Add a todo" />}
