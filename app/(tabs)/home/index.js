@@ -1,3 +1,5 @@
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+
 import {
   Image,
   Pressable,
@@ -6,14 +8,11 @@ import {
   Text,
   TextInput,
   View,
-  ViewBase,
+  Keyboard
 
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { AntDesign, Feather } from "@expo/vector-icons";
-import { BottomModal } from "react-native-modals";
-import { ModalTitle, ModalContent } from "react-native-modals";
-import { SlideAnimation } from "react-native-modals";
 import { Entypo, FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
@@ -26,12 +25,16 @@ const index = () => {
     const router = useRouter();
   const [todos, setTodos] = useState([]);
   const today = moment().format("MMM Do");
-  const [isModalVisible, setModalVisible] = useState(false);
   const [category, setCategory] = useState("All");
   const [todo, setTodo] = useState("");
   const [pendingTodos, setPendingTodos] = useState([]);
   const [completedTodos, setCompletedTodos] = useState([]);
   const [marked, setMarked] = useState(false);
+
+
+  const sheetRef = useRef(null);
+  // Snap points for the sheet (height in % or px)
+  const snapPoints = useMemo(() => ['50%'], []);
 
   const suggestions = [
     {
@@ -68,19 +71,14 @@ const index = () => {
         title: todo,
         category: category,
       };
-      
 
-      axios
-        .post("http://192.168.1.54:3000/todos/683657a279faae78728248e7", todoData)
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.log("error", error);
-        });
+    await axios.post(
+      "http://192.168.1.54:3000/todos/683657a279faae78728248e7",
+      todoData
+    );
 
       await getUserTodos();
-        setModalVisible(false);
+        handleClose();
         setTodo("");
     } catch (error) {
       console.log("error", error);
@@ -92,20 +90,28 @@ const index = () => {
 
   useEffect(() => {
     getUserTodos();
-  }, [marked, isModalVisible]);
+  }, [marked]);
   
+  const handleClose = () => {
+    sheetRef.current?.close();
+    Keyboard.dismiss();
+  };
 
+  const handleOpen = () => {
+    console.log("Open Modal");
+    sheetRef.current?.expand();
+  };
 
   const getUserTodos = async () => {
     try {
       const response = await axios.get(
         `http://192.168.1.54:3000/users/683657a279faae78728248e7/todos`
       );
+      const recentTodos = response.data.todos.slice(-5)
+      console.log(recentTodos);
+      setTodos(recentTodos);
 
-      console.log(response.data.todos);
-      setTodos(response.data.todos);
-
-      const fetchedTodos = response.data.todos || [];
+      const fetchedTodos = recentTodos || [];
       const pending = fetchedTodos.filter(
         (todo) => todo.status !== "completed"
       );
@@ -121,11 +127,12 @@ const index = () => {
     }
   };
 
-  const markTodoAsCompleted = async (todoId) => {
+
+  const markTodoAsCompleted = async (todoId) => {    
     try {
       setMarked(true);
       const response = await axios.patch(
-        `http://localhost:3000/todos/${todoId}/complete`
+        `http://192.168.1.54:3000/todos/${todoId}/complete`
       );
       console.log(response.data);
     } catch (error) {
@@ -145,6 +152,7 @@ const index = () => {
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
+          marginBlockStart: 100,
         }}
       >
         <Pressable
@@ -171,6 +179,7 @@ const index = () => {
         >
           <Text style={{ color: "white", textAlign: "center" }}>Work</Text>
         </Pressable>
+
         <Pressable
           style={{
             backgroundColor: "#7CB9E8",
@@ -184,7 +193,8 @@ const index = () => {
         >
           <Text style={{ color: "white", textAlign: "center" }}>Personal</Text>
         </Pressable>
-        <Pressable onPress={() => setModalVisible(!isModalVisible)}>
+        
+        <Pressable onPress={handleOpen}>
           <AntDesign name="pluscircle" size={30} color="#007FFF" />
         </Pressable>
       </View>
@@ -331,7 +341,7 @@ const index = () => {
                 No Tasks for today! add a task
               </Text>
               <Pressable
-                onPress={() => setModalVisible(!isModalVisible)}
+                onPress={handleClose}
                 style={{ marginTop: 15 }}
               >
                 <AntDesign name="pluscircle" size={30} color="#007FFF" />
@@ -340,123 +350,85 @@ const index = () => {
           )}
         </View>
       </ScrollView>
+      
+    <BottomSheet
+      ref={sheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose={true}
+      onClose={handleClose}
+    >
+      <BottomSheetView>
+          <View style={{ padding: 20 }}>
+            <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 10 }}>Add a todo</Text>
 
-      <BottomModal
-        onBackdropPress={() => {setModalVisible(false);return true;}}
-        onHardwareBackPress={() => {setModalVisible(false);return true;}}
-        swipeDirection={["up", "down"]}
-        swipeThreshold={200}
-        modalTitle={<ModalTitle title="Add a todo" />}
-        modalAnimation={
-          new SlideAnimation({
-            slideFrom: "bottom",
-          })
-        }
-        visible={isModalVisible}
-        onTouchOutside={() => setModalVisible(!isModalVisible)}
-      >
-        <ModalContent style={{ width: "100%", height: 280 }}>
-          <View
-            style={{
-              marginVertical: 10,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <TextInput
-              value={todo}
-              onChangeText={(text) => setTodo(text)}
-              placeholder="Input a new task here"
-              style={{
-                padding: 10,
-                borderColor: "#E0E0E0",
-                borderWidth: 1,
-                borderRadius: 5,
-                flex: 1,
-              }}
-            />
-            <Ionicons onPress={addTodo} name="send" size={24} color="#007FFF" />
-          </View>
-
-          <Text>Choose Category</Text>
-
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-              marginVertical: 10,
-            }}
-          >
-            <Pressable
-              onPress={() => setCategory("Work")}
-              style={{
-                borderColor: "#E0E0E0",
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderWidth: 1,
-                borderRadius: 25,
-              }}
-            >
-              <Text>Work</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setCategory("Personal")}
-              style={{
-                borderColor: "#E0E0E0",
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderWidth: 1,
-                borderRadius: 25,
-              }}
-            >
-              <Text>Personal</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setCategory("WishList")}
-              style={{
-                borderColor: "#E0E0E0",
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderWidth: 1,
-                borderRadius: 25,
-              }}
-            >
-              <Text>WishList</Text>
-            </Pressable>
-          </View>
-
-          <Text>Some sugggestions</Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-              flexWrap: "wrap",
-              marginVertical: 10,
-            }}
-          >
-            {suggestions?.map((item, index) => (
-              <Pressable
-                onPress={() => setTodo(item?.todo)}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <TextInput
+                value={todo}
+                onChangeText={setTodo}
+                placeholder="Input a new task here"
                 style={{
-                  backgroundColor: "#F0F8FF",
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  borderRadius: 25,
+                  padding: 10,
+                  borderColor: "#E0E0E0",
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  flex: 1,
                 }}
-                key={index}
-              >
-                <Text style={{ textAlign: "center" }}>{item?.todo}</Text>
-              </Pressable>
-            ))}
+              />
+              <Ionicons onPress={addTodo} name="send" size={24} color="#007FFF" />
+            </View>
+
+            <Text style={{ marginTop: 15 }}>Choose Category</Text>
+            <View style={{ flexDirection: "row", gap: 10, marginVertical: 10 }}>
+              {["Work", "Personal", "WishList"].map((cat) => (
+                <Pressable
+                  key={cat}
+                  onPress={() => setCategory(cat)}
+                  style={{
+                    borderColor: "#E0E0E0",
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderWidth: 1,
+                    borderRadius: 25,
+                  }}
+                >
+                  <Text>{cat}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <Text>Some suggestions</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 10,
+                marginVertical: 10,
+              }}
+            >
+              {suggestions?.map((item, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => setTodo(item?.todo)}
+                  style={{
+                    backgroundColor: "#F0F8FF",
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 25,
+                  }}
+                >
+                  <Text>{item?.todo}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
-        </ModalContent>
-      </BottomModal>
+       </BottomSheetView>
+    </BottomSheet>
     </>
   );
 };
+
+
 
 export default index;
 
