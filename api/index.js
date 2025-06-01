@@ -17,14 +17,14 @@ const moment = require("moment");
 mongoose
   .connect("mongodb+srv://oumoudiallo7540:FhhSDktbgYHqDYYH@todolist.g1gdoow.mongodb.net/")
   .then(() => {
-    console.log("Connected to MongoDB");
+    console.log("Connexion à MongoDB réussie");
   })
   .catch((error) => {
-    console.log("Error connectin to mongoDb", error);
+    console.log("Erreur de connexion à MongoDB", error);
   });
 
 app.listen(port, () => {
-  console.log("Server is running on port 3000");
+  console.log("Le serveur fonctionne sur le port 3000");
 });
 
 const User = require("./models/user");
@@ -34,10 +34,10 @@ app.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    ///check if email is already registered
+    ///vérifier si l'email est déjà enregistré
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.log("Email already registered");
+      console.log("Email déjà enregistré");
     }
 
     const newUser = new User({
@@ -48,10 +48,10 @@ app.post("/register", async (req, res) => {
 
     await newUser.save();
 
-    res.status(202).json({ message: "User registered successfully" });
+    res.status(202).json({ message: "Utilisateur enregistré avec succès" });
   } catch (error) {
-    console.log("Error registering the user", error);
-    res.status(500).json({ message: "Registration failed" });
+    console.log("Erreur lors de l'enregistrement de l'utilisateur", error);
+    res.status(500).json({ message: "Échec de l'enregistrement" });
   }
 });
 
@@ -69,19 +69,19 @@ app.post("/login", async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Invalid Email" });
+      return res.status(401).json({ message: "Email invalide" });
     }
 
     if (user.password !== password) {
-      return res.status(401).json({ message: "Invalide password" });
+      return res.status(401).json({ message: "Mot de passe invalide" });
     }
 
     const token = jwt.sign({ userId: user._id }, secretKey);
 
     res.status(200).json({ token });
   } catch (error) {
-    console.log("Login failed", error);
-    res.status(500).json({ message: "Login failed" });
+    console.log("Échec de la connexion", error);
+    res.status(500).json({ message: "Échec de la connexion" });
   }
 });
 
@@ -100,15 +100,15 @@ app.post("/todos/:userId", async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ error: "Utilisateur non trouvé" });
     }
 
     user?.todos.push(newTodo._id);
     await user.save();
 
-    res.status(200).json({ message: "Todo added sucessfully", todo: newTodo });
+    res.status(200).json({ message: "Tâche ajoutée avec succès", todo: newTodo });
   } catch (error) {
-    res.status(200).json({ message: "Todo not added" });
+    res.status(200).json({ message: "Tâche non ajoutée" });
   }
 });
 
@@ -118,12 +118,12 @@ app.get("/users/:userId/todos", async (req, res) => {
 
     const user = await User.findById(userId).populate("todos");
     if (!user) {
-      return res.status(404).json({ error: "user not found" });
+      return res.status(404).json({ error: "Utilisateur non trouvé" });
     }
 
     res.status(200).json({ todos: user.todos });
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: "Une erreur s'est produite" });
   }
 });
 
@@ -140,14 +140,14 @@ app.patch("/todos/:todoId/complete", async (req, res) => {
     );
 
     if (!updatedTodo) {
-      return res.status(404).json({ error: "Todo not found" });
+      return res.status(404).json({ error: "Tâche non trouvée" });
     }
 
     res
       .status(200)
-      .json({ message: "Todo marked as complete", todo: updatedTodo });
+      .json({ message: "Tâche marquée comme terminée", todo: updatedTodo });
   } catch (error) {
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: "Une erreur s'est produite" });
   }
 });
 
@@ -158,15 +158,15 @@ app.get("/todos/completed/:date", async (req, res) => {
     const completedTodos = await Todo.find({
       status: "completed",
       createdAt: {
-        $gte: new Date(`${date}T00:00:00.000Z`), // Start of the selected date
-        $lt: new Date(`${date}T23:59:59.999Z`), // End of the selected date
+        $gte: new Date(`${date}T00:00:00.000Z`), // Début de la date sélectionnée
+        $lt: new Date(`${date}T23:59:59.999Z`), // Fin de la date sélectionnée
       },
     }).exec();
 
     res.status(200).json({ completedTodos });
   } catch (error) {
     
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ error: "Une erreur s'est produite" });
   }
 });
 
@@ -182,6 +182,6 @@ app.get("/todos/count", async (req, res) => {
 
     res.status(200).json({ totalCompletedTodos, totalPendingTodos });
   } catch (error) {
-    res.status(500).json({ error: "Network error" });
+    res.status(500).json({ error: "Erreur réseau" });
   }
 });
