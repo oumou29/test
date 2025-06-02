@@ -5,7 +5,7 @@ inmport
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Text>Ouvre le fichier App.js pour commencer à travailler sur ton application !</Text>
       <StatusBar style="auto" />
     </View>
   );

@@ -1,42 +1,33 @@
 const suggestions = [
     {
       id: "0",
-      todo: "Drink Water, keep healthy",
+      todo: "Boire de l'eau, rester en bonne santé",
     },
     {
       id: "1",
-      todo: "Go Excercising",
+      todo: "Faire de l'exercice",
     },
     {
       id: "2",
-      todo: "Go to bed early",
+      todo: "Se coucher tôt",
     },
     {
       id: "3",
-      todo: "Take pill reminder",
+      todo: "Rappel de prise de médicaments",
     },
     {
       id: "4",
-      todo: "Go Shopping",
+      todo: "Faire les courses",
     },
     {
       id: "5",
-      todo: "finish assignments",
+      todo: "Terminer les devoirs",
     },
-  ];
 
-
-{/* <Image
-  style={{ width: 200, height: 200, resizeMode: "contain" }}
+    <Image
+  style={{ width: 120, height: 120 }}
   source={{
-    uri: "https://cdn-icons-png.flaticon.com/128/2387/2387679.png",
+    uri: "",
   }}
-/> */}
-
-//profile.js
-<Image
-style={{ width: 120, height: 120 }}
-source={{
-  uri: "https://cdn-icons-png.flaticon.com/128/9537/9537221.png",
-}}
 />
+  ];

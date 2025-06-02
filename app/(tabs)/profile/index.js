@@ -34,7 +34,7 @@ const index = () => {
             <Image
               style={styles.avatar}
               source={{
-                uri: "https://lh3.googleusercontent.com/ogw/ANLem4Zmk7fohWyH7kB6YArqFy0WMfXnFtuX3PX3LSBf=s64-c-mo",
+                uri: "",
               }}
             />
             <View style={styles.statusIndicator} />
